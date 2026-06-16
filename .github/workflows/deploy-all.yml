@@ -1,0 +1,39 @@
+name: 部署到全部 Worker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # 一个失败不影响其他
+      matrix:
+        include:
+          - worker: broadcast-channel
+          - worker: broadcast-channel-ali
+          - worker: broadcast-channel-netdisk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install
+
+      - run: SERVER_ADAPTER=cloudflare_workers pnpm build
+
+      - name: 部署到 ${{ matrix.worker }}
+        run: |
+          sed -i 's/"name": "[^"]*"/"name": "${{ matrix.worker }}"/' wrangler.jsonc
+          npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
