@@ -1,11 +1,14 @@
 ---
+import { getEnv } from '../lib/env'
+
 const footerClass = 'hidden p-2 text-sm leading-normal text-footer md:block'
+const GITHUB = getEnv(import.meta.env, Astro, 'GITHUB')
 ---
 
 <footer class={footerClass}>
   Powered by
   <a
-    href="https://github.com/miantiao-me/BroadcastChannel"
+    href={`https://github.com/${GITHUB || 'ileonspace'}/BroadcastChannel`}
     title="BroadcastChannel"
     target="_blank"
     rel="noopener noreferrer"
